@@ -1,0 +1,14 @@
+server:
+  port: ":8080"
+
+routes:
+  root: "/"
+  health: "/health"
+  ws: "/ws"
+  uploadFile : "/file"
+  getUploadedFiles : "/uploadedFiles"
+
+cors:
+  allowed_origins:
+    - "http://localhost"
+

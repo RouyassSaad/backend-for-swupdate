@@ -1,0 +1,31 @@
+{
+	"software": {
+		"reboot": false,
+		"version": "0.1.0",
+		"test": {
+			"hardware-compatibility": [ "0.1" ],
+			"stable": {
+				"working": {
+					"images": [{
+						"filename": "main.go",
+						"sha256": "5046400b4e27e889d2821d52fbf06cabfc7f2695396bb572350c77592bba21fe",
+						"type": "executor",
+						"properties": {
+							"cmd": "/etc/swupdate/wait_and_ok.sh"
+						}
+					}]
+				},
+				"error": {
+					"images": [{
+						"filename": "main.go",
+						"sha256": "5046400b4e27e889d2821d52fbf06cabfc7f2695396bb572350c77592bba21fe",
+						"type": "executor",
+						"properties": {
+							"cmd": "/etc/swupdate/wait_and_err.sh"
+						}
+					}]
+				}
+			}
+		}
+	}
+}
