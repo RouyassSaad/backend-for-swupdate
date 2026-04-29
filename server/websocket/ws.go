@@ -177,6 +177,15 @@ func (m *WSConnection) ShouldItLive() bool {
 	return time.Now().Before(m.expires_at)
 }
 
+func (h *Hub) ConnectionExist(wsObjectId string) bool {
+	for manager := range h.managers {
+		if manager.id == wsObjectId {
+			return true
+		}
+	}
+	return false
+}
+
 func (h *Hub) CleanUpRoutine() {
 	ticker := time.NewTicker(5 * time.Hour)
 	defer ticker.Stop()

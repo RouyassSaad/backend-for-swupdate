@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -39,4 +40,36 @@ func SendJSON(w http.ResponseWriter, status int, message string) {
 	}
 
 	json.NewEncoder(w).Encode(resp)
+}
+
+func OnlyMethodsAllowed(w http.ResponseWriter, r *http.Request, methods ...string) bool {
+	for _, m := range methods {
+		if r.Method == m {
+			return true
+		}
+	}
+
+	SendJSON(w, http.StatusMethodNotAllowed, "Method not allowed")
+	return false
+}
+
+/*
+cookie, err := r.Cookie("ws-connexion-id")
+		if err != nil || cookie.Value == "" {
+			log.Logger.Error("Missing ws-connexion-id cookie")
+			http.Error(w, "No id received, try reconnecting", http.StatusBadRequest)
+			return
+		}
+		webSocketId := cookie.Value
+		log.Logger.Info("Client ws id received", "id", webSocketId)
+*/
+
+func GetConnectionId(w http.ResponseWriter, r *http.Request) (string, error) {
+	cookie, err := r.Cookie("ws-connexion-id")
+	if err != nil || cookie.Value == "" {
+		http.Error(w, "No id received, try reconnecting", http.StatusBadRequest)
+		return "", fmt.Errorf("missing websocket connection id")
+	}
+
+	return cookie.Value, nil
 }

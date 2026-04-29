@@ -68,8 +68,7 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 	SetEssentialHeaders(w, r)
 
 	// Handle CORS preflight
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusNoContent)
+	if !OnlyMethodsAllowed(w, r, "GET") {
 		return
 	}
 
@@ -87,8 +86,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method != http.MethodGet {
-		SendJSON(w, http.StatusMethodNotAllowed, "Method not allowed")
+	if !OnlyMethodsAllowed(w, r, "GET") {
 		return
 	}
 
@@ -108,8 +106,7 @@ func GetUploadedFiles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Only GET allowed
-	if r.Method != http.MethodGet {
-		SendJSON(w, http.StatusMethodNotAllowed, "method not allowed")
+	if !OnlyMethodsAllowed(w, r, "GET") {
 		return
 	}
 
@@ -142,29 +139,27 @@ func GetUploadedFiles(w http.ResponseWriter, r *http.Request) {
 // POST /uploadFile
 func FileUploadHandler(globalChannel chan *t.UpdateChanel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Timeout context for the upload + notification
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		defer cancel()
 
 		SetEssentialHeaders(w, r)
 
 		// Only POST allowed
-		if r.Method != http.MethodPost {
-			log.Logger.Error("Method Not Allowed", "method", r.Method)
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		if !OnlyMethodsAllowed(w, r, "POST") {
 			return
 		}
 
 		// Extract WebSocket ID from cookie
-		cookie, err := r.Cookie("ws-connexion-id")
-		if err != nil || cookie.Value == "" {
-			log.Logger.Error("Missing ws-connexion-id cookie")
-			http.Error(w, "No id received, try reconnecting", http.StatusBadRequest)
+		webSocketId, err := GetConnectionId(w, r)
+		if err != nil {
 			return
 		}
-		webSocketId := cookie.Value
-		log.Logger.Info("Client ws id received", "id", webSocketId)
 
-		// Timeout context for the upload + notification
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		defer cancel()
+		if !wsmanager.GlobalHub.ConnectionExist(webSocketId) {
+			SendJSON(w, http.StatusInternalServerError, "You are not connected by a websocket,try refreshing the page")
+			return
+		}
 
 		// Parse multipart form (max 10MB)
 		if err := r.ParseMultipartForm(10 << 20); err != nil {
