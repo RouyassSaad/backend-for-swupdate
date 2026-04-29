@@ -134,8 +134,8 @@ func (m *WSConnection) Write(msg any) error {
 			log.Logger.Error("Error While Writing", "err", err)
 			return err
 		}
-		log.Logger.Info("JSON Message Sent",
-			"type", v.Type)
+		/*log.Logger.Info("JSON Message Sent",
+		"type", v.Type)*/
 		return nil
 
 	case SwupdateMessage:
@@ -158,7 +158,7 @@ func (m *WSConnection) Write(msg any) error {
 		}
 		return nil
 	default:
-		log.Logger.Error("Unsupported message type", "type", fmt.Sprintf("%T", msg))
+		log.Logger.Error("Unsupported message type", "type", fmt.Sprintf("%T", v))
 		return fmt.Errorf("unsupported message type: %T", msg)
 
 	}

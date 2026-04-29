@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
 	helper "swupdate/bindings/golang/helpers"
 	log "swupdate/bindings/golang/server/log"
 	t "swupdate/bindings/golang/server/models"
@@ -182,7 +183,9 @@ func FileUploadHandler(globalChannel chan *t.UpdateChanel) http.HandlerFunc {
 		defer file.Close()
 
 		// Create destination file
-		dstPath := "/tmp/" + header.Filename
+		filename := helper.SanitizeFilename(header.Filename)
+		dstPath := "/tmp/" + filename
+
 		dst, err := os.Create(dstPath)
 		if err != nil {
 			log.Logger.Error("Cannot save file", "path", dstPath, "error", err)
@@ -211,7 +214,7 @@ func FileUploadHandler(globalChannel chan *t.UpdateChanel) http.HandlerFunc {
 		// Notify via WebSocket channel
 		update := &t.UpdateChanel{
 			ConnexionId: webSocketId,
-			Filename:    header.Filename,
+			Filename:    filename,
 		}
 
 		select {

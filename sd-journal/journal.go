@@ -82,8 +82,6 @@ func GetSystemMdLogs(journalctlChan chan *string) {
 
 				// Print the MESSAGE field
 				msg := entry.Fields["MESSAGE"]
-				//fmt.Println(msg)
-				//log.Logger.Info("journal log", "msg", msg)
 
 				formattedMsg := util.FormatJournalLog(msg)
 
